@@ -12,6 +12,7 @@ import IntroductionScreen from '../screens/IntroductionScreen';
 import LoginScreen from '../screens/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import SplashScreen from '../screens/SplashScreen';
+import Profile from '../screens/Profile';
 
 
 
@@ -32,7 +33,7 @@ const Navigation: FC = () => {
                  <Stack.Screen name="SplashScreen" component={SplashScreen} />
                 <Stack.Screen name="IntroductionScreen" component={IntroductionScreen} />
                
-             
+                 <Stack.Screen name="Profile" component={Profile} />
                 <Stack.Screen name="LoginScreen" component={LoginScreen} />
                 <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
               

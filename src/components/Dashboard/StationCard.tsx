@@ -38,7 +38,7 @@ const Station = () => {
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const response = await axios.get("http:// 172.17.112.1:3000/api/stations");
+        const response = await axios.get("https://07fe-2400-adc5-124-2500-a074-74fc-2c0a-1cdc.ngrok-free.app/api/stations");
         if (response.data?.stations) {
           setStations(response.data.stations);
         }
@@ -86,8 +86,9 @@ const Station = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
     paddingTop: 20,
+    marginTop: -300, // Adjust as needed for your layout
   },
   title: {
     fontSize: 24,
@@ -104,7 +105,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginHorizontal: 10,
+    marginTop: 20,
     width: 200,
+    height: 120,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,

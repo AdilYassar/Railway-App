@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import React from 'react'
 import Station from '../components/Dashboard/StationCard'
+import Header from '../components/Dashboard/header'
 
 const DashboardScreen = () => {
   return (
     <View style={styles.container}>
+      <Header />
   <Station/>
     </View>
   )
