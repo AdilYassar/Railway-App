@@ -115,13 +115,15 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     paddingHorizontal: 10,
+    marginLeft: -13,
   },
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 10,
     padding: 15,
     marginHorizontal: 10,
-    marginTop: 10,
+    marginLeft:5,
+    marginBottom: 20,
     width: 200,
     height: 140, // increased height to fit price line
     shadowColor: "#000",

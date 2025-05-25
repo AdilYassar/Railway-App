@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { launchImageLibrary } from "react-native-image-picker";
 
 
 interface Booking {
@@ -22,18 +32,20 @@ interface UserData {
 
 const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedData = await AsyncStorage.getItem("USER_DATA");
+        const storedPhoto = await AsyncStorage.getItem("PROFILE_PHOTO");
         if (storedData) {
           const parsedData: UserData = JSON.parse(storedData);
-          console.log("User Data:", parsedData); // Logs data to the terminal for debugging
           setUserData(parsedData);
-        } else {
-          console.log("No user data found.");
+        }
+        if (storedPhoto) {
+          setProfilePhoto(storedPhoto);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -44,6 +56,36 @@ const Profile: React.FC = () => {
 
     fetchUserData();
   }, []);
+
+  const handleImageUpload = async () => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: "photo",
+        quality: 0.7,
+      });
+
+      if (result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+        if (uri) {
+          setProfilePhoto(uri);
+          await AsyncStorage.setItem("PROFILE_PHOTO", uri);
+          Alert.alert("Success", "Profile photo updated!");
+        }
+      }
+    } catch (error) {
+      console.error("Error selecting image:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert("Logged Out", "You have been logged out successfully.");
+      // Navigate to login or home screen
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -62,18 +104,31 @@ const Profile: React.FC = () => {
     );
   }
 
-  const { customer, bookings } = userData;
+  const { customer } = userData;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Profile</Text>
+      <View style={styles.profileHeader}>
+        <TouchableOpacity onPress={handleImageUpload}>
+          {profilePhoto ? (
+            <Image source={{ uri: profilePhoto }} style={styles.profileImage} />
+          ) : (
+            <Ionicons
+              name="person-circle-outline"
+              size={100}
+              color="#ccc"
+            />
+          )}
+        </TouchableOpacity>
+        <Text style={styles.name}>{customer?.name || "N/A"}</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.card}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>{customer?.name || "N/A"}</Text>
-
-             <Text style={styles.label}>id:</Text>
+        <Text style={styles.label}>ID:</Text>
         <Text style={styles.value}>{customer?.id || "N/A"}</Text>
-
 
         <Text style={styles.label}>Email:</Text>
         <Text style={styles.value}>{customer?.email || "N/A"}</Text>
@@ -82,20 +137,7 @@ const Profile: React.FC = () => {
         <Text style={styles.value}>{customer?.phone || "N/A"}</Text>
       </View>
 
-      <View style={styles.bookings}>
-        <Text style={styles.label}>Bookings:</Text>
-        {bookings && bookings.length > 0 ? (
-          bookings.map((booking, index) => (
-            <View key={index} style={styles.bookingCard}>
-              <Text style={styles.bookingText}>{`Booking #${index + 1}`}</Text>
-              <Text style={styles.bookingText}>Details: {booking.details || "N/A"}</Text>
-       
-            </View>
-          ))
-        ) : (
-          <Text style={styles.message}>No bookings yet.</Text>
-        )}
-      </View>
+        
     </View>
   );
 };
@@ -104,13 +146,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    marginTop: 20,
     backgroundColor: "#f5f5f5",
   },
-  header: {
-    fontSize: 28,
+  profileHeader: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  name: {
+    fontSize: 22,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 20,
+  },
+  logoutButton: {
+    marginTop: 10,
+    backgroundColor: "#ff4d4d",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  logoutText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   card: {
     padding: 15,

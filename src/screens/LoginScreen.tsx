@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { navigate } from "../utils/Navigation";
 import { BASE_URL } from "../state/Config";
 
+const TOKEN_EXPIRY_DAYS = 7;
+
 const LoginScreen = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -19,17 +21,41 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
- const handleLogin = async () => {
-  if (!phone || !email || !name || !password) {
-    Alert.alert("Error", "Please fill in all fields.");
-    return;
-  }
+  // Check if the user is already logged in on app launch
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem("USER_DATA");
+        if (!userDataString) return;
 
-  setIsLoading(true);
-  try {
-    const response = await fetch(
-      `${BASE_URL}/users/login`, // Replace with your real URL
-      {
+        const userData = JSON.parse(userDataString);
+        const storedTime = userData.timestamp;
+        const currentTime = Date.now();
+
+        // Check if the token is still valid
+        if (currentTime - storedTime < TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+          navigate("DashboardScreen");
+        } else {
+          // Token expired, clear storage
+          await AsyncStorage.removeItem("USER_DATA");
+        }
+      } catch (error) {
+        console.error("Failed to check login status:", error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  const handleLogin = async () => {
+    if (!phone || !email || !name || !password) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${BASE_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,50 +66,42 @@ const LoginScreen = () => {
           name,
           password,
         }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const { message, accessToken, customer } = data;
+
+        // Save user data and timestamp to AsyncStorage
+        const userData = {
+          message,
+          accessToken,
+          customer,
+          timestamp: Date.now(), // Save the current time
+        };
+
+        await AsyncStorage.setItem("USER_DATA", JSON.stringify(userData));
+        Alert.alert("Success", message);
+
+        // Navigate to Dashboard
+        navigate("DashboardScreen");
+      } else {
+        Alert.alert(
+          "Login Failed",
+          data.message || "Please check your details or try again later."
+        );
       }
-    );
-
-    const data = await response.json();
-
-    // Log the response for debugging
-    console.log("API Response:", data);
-
-    if (response.ok) {
-      const { message, accessToken, customer } = data;
-
-      // Save the entire user data object to AsyncStorage
-    await AsyncStorage.setItem(
-  "USER_DATA",
-  JSON.stringify({
-    message,
-    accessToken,
-    customer, // Make sure to include all fields like `customer.id`
-  })
-);
-
-      // Log the user data to the console for debugging
-      console.log("User Data saved:", data);
-      Alert.alert("Success", message);
-
-      // Navigate to Dashboard or other screen
-      navigate("DashboardScreen");
-    } else {
+    } catch (error) {
+      console.error("Login failed:", error);
       Alert.alert(
         "Login Failed",
-        data.message || "Please check your details or try again later."
+        "An error occurred. Please check your details or try again later."
       );
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Login failed:", error);
-    Alert.alert(
-      "Login Failed",
-      "An error occurred. Please check your details or try again later."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <View style={styles.container}>
