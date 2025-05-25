@@ -1,6 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { navigate } from "../utils/Navigation";
+import { BASE_URL } from "../state/Config";
 
 const LoginScreen = () => {
   const [phone, setPhone] = useState("");
@@ -9,15 +19,17 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!phone || !email || !name || !password) {
-      Alert.alert("Error", "Please fill in all fields.");
-      return;
-    }
+ const handleLogin = async () => {
+  if (!phone || !email || !name || !password) {
+    Alert.alert("Error", "Please fill in all fields.");
+    return;
+  }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch("https://07fe-2400-adc5-124-2500-a074-74fc-2c0a-1cdc.ngrok-free.app/api/users/login", {
+  setIsLoading(true);
+  try {
+    const response = await fetch(
+      `${BASE_URL}/users/login`, // Replace with your real URL
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,39 +40,50 @@ const LoginScreen = () => {
           name,
           password,
         }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        const { message, accessToken, customer } = data;
-        Alert.alert("Success", message);
-
-        // Save accessToken and navigate to the next screen if needed
-        console.log("Access Token:", accessToken);
-        console.log("Customer Info:", customer);
-
-        navigate("DashboardScreen");
-      } else {
-        Alert.alert("Login Failed", data.message || "Please check your details or try again later.");
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      Alert.alert("Login Failed", "Please check your details or try again later.");
-    } finally {
-      setIsLoading(false);
+    );
+
+    const data = await response.json();
+
+    // Log the response for debugging
+    console.log("API Response:", data);
+
+    if (response.ok) {
+      const { message, accessToken, customer } = data;
+
+      // Save the entire user data object to AsyncStorage
+    await AsyncStorage.setItem(
+  "USER_DATA",
+  JSON.stringify({
+    message,
+    accessToken,
+    customer, // Make sure to include all fields like `customer.id`
+  })
+);
+
+      // Log the user data to the console for debugging
+      console.log("User Data saved:", data);
+      Alert.alert("Success", message);
+
+      // Navigate to Dashboard or other screen
+      navigate("DashboardScreen");
+    } else {
+      Alert.alert(
+        "Login Failed",
+        data.message || "Please check your details or try again later."
+      );
     }
-  };
+  } catch (error) {
+    console.error("Login failed:", error);
+    Alert.alert(
+      "Login Failed",
+      "An error occurred. Please check your details or try again later."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-
-
-
-
-
-
-
-
-
-  
 
   return (
     <View style={styles.container}>
@@ -97,7 +120,9 @@ const LoginScreen = () => {
         onPress={handleLogin}
         disabled={isLoading}
       >
-        <Text style={styles.buttonText}>{isLoading ? "Logging in..." : "Login"}</Text>
+        <Text style={styles.buttonText}>
+          {isLoading ? "Logging in..." : "Login"}
+        </Text>
       </TouchableOpacity>
     </View>
   );

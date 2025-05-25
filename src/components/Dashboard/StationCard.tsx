@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import axios from "axios";
+import { BASE_URL } from "../../state/Config";
 
 interface StationCardProps {
   name: string;
   code: string;
   city: string;
   state: string;
+  price: number; // required price field
 }
 
-const StationCard: React.FC<StationCardProps> = ({ name, code, city, state }) => {
+const StationCard: React.FC<StationCardProps> = ({
+  name,
+  code,
+  city,
+  state,
+  price,
+}) => {
   return (
     <View style={styles.card}>
       <Text style={styles.stationName}>{name}</Text>
@@ -17,6 +31,7 @@ const StationCard: React.FC<StationCardProps> = ({ name, code, city, state }) =>
       <Text style={styles.location}>
         {city}, {state}
       </Text>
+      <Text style={styles.price}>Price: ${price.toFixed(2)}</Text>
     </View>
   );
 };
@@ -25,6 +40,7 @@ interface Station {
   _id: string;
   name: string;
   code: string;
+  price: number;
   location: {
     city: string;
     state: string;
@@ -38,7 +54,7 @@ const Station = () => {
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const response = await axios.get("https://07fe-2400-adc5-124-2500-a074-74fc-2c0a-1cdc.ngrok-free.app/api/stations");
+        const response = await axios.get(`${BASE_URL}/stations`);
         if (response.data?.stations) {
           setStations(response.data.stations);
         }
@@ -63,7 +79,7 @@ const Station = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Stations</Text>
+      
       <FlatList
         data={stations}
         renderItem={({ item }) => (
@@ -72,6 +88,7 @@ const Station = () => {
             code={item.code}
             city={item.location.city}
             state={item.location.state}
+            price={item.price} // pass price here
           />
         )}
         keyExtractor={(item) => item._id}
@@ -85,10 +102,9 @@ const Station = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     backgroundColor: "#fff",
-    paddingTop: 20,
-    marginTop: -300, // Adjust as needed for your layout
   },
   title: {
     fontSize: 24,
@@ -105,9 +121,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginHorizontal: 10,
-    marginTop: 20,
+    marginTop: 10,
     width: 200,
-    height: 120,
+    height: 140, // increased height to fit price line
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
@@ -128,6 +144,12 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 14,
     color: "#777",
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 10,
   },
   loaderContainer: {
     flex: 1,

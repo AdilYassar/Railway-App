@@ -1,10 +1,11 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import Booking from '../components/Dashboard/Bookings'
 
 const BookingScreen = () => {
   return (
-    <View>
-      <Text>BookingScreen</Text>
+    <View style={{ flex: 1, padding: 20 }}>
+         <Booking/>
     </View>
   )
 }

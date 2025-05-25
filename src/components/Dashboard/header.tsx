@@ -1,15 +1,13 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-import Ionicons from 'react-native-vector-icons/Ionicons'; // Using Ionicons as an example
-import { navigate } from '../../utils/Navigation';
+import Ionicons from "react-native-vector-icons/Ionicons"; // Ionicons
+import { navigate } from "../../utils/Navigation";
 
 const Header = () => {
-
-
   const navigateToProfile = () => {
-    navigate('Profile'); // Replace 'Profile' with the name of your Profile screen
-  }
+    navigate("Profile"); // Update route as needed
+  };
 
   return (
     <View style={styles.container}>
@@ -23,20 +21,21 @@ const Header = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    marginTop: -200,// Adjust as needed for your layout
-    backgroundColor: '#fff', // Light background color
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#fff", // white header background
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   iconContainer: {
-    padding: 8, // Add some padding for touchable area
+    padding: 8, // padding for touch target
   },
 });
 
